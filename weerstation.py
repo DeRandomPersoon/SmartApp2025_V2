@@ -1,15 +1,11 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-
-# --- Weather Functions ---
 def fahrenheit(temp_celsius: float) -> float:
     return 32 + 1.8 * temp_celsius
 
-
 def gevoelstemperatuur(temp_celsius: float, windsnelheid: float, luchtvochtigheid: float) -> float:
     return temp_celsius - (luchtvochtigheid / 100) * windsnelheid
-
 
 def weerrapport(temp_celsius: float, windsnelheid: float, luchtvochtigheid: float) -> str:
     gevoel = gevoelstemperatuur(temp_celsius, windsnelheid, luchtvochtigheid)
@@ -27,8 +23,6 @@ def weerrapport(temp_celsius: float, windsnelheid: float, luchtvochtigheid: floa
     else:
         return "Warm! Airco aan!"
 
-
-# --- Weerstation Page ---
 class WeerstationPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -39,7 +33,6 @@ class WeerstationPage(ttk.Frame):
 
         ttk.Label(self, text="Weerstation", font=("Arial", 16)).pack(pady=10)
 
-        # Input fields
         self.temp_var = tk.StringVar()
         self.wind_var = tk.StringVar()
         self.humidity_var = tk.StringVar()
@@ -60,8 +53,6 @@ class WeerstationPage(ttk.Frame):
 
         self.output = tk.Text(self, height=10, width=70)
         self.output.pack(pady=10)
-
-        ttk.Button(self, text="Terug naar menu", command=lambda: controller.show_frame(controller.frames.keys().__iter__().__next__())).pack(pady=5)
 
     def process_day(self):
         if self.day >= 7:
@@ -87,14 +78,12 @@ class WeerstationPage(ttk.Frame):
         report = weerrapport(temp_c, wind, humidity)
         avg_temp = sum(self.temperatures) / len(self.temperatures)
 
-        # Show results
         self.output.insert(tk.END, f"Dag {self.day}\n")
         self.output.insert(tk.END, f"Temperatuur: {temp_c:.1f}°C ({temp_f:.1f}°F)\n")
         self.output.insert(tk.END, f"Weerrapport: {report}\n")
         self.output.insert(tk.END, f"Gemiddelde temperatuur tot nu toe: {avg_temp:.1f}°C\n")
         self.output.insert(tk.END, "======================================\n")
 
-        # Clear input fields
         self.temp_var.set("")
         self.wind_var.set("")
         self.humidity_var.set("")
