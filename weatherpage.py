@@ -52,7 +52,7 @@ class WeatherPage(ttk.Frame):
 
             msg = f"Actuele weer voor {name}:\n"
             msg = f"Temperatuur: {wdata.get('temperature')}{chr(176)}C\n"
-            msg += f"Windsnelheid: {wdata.get('windspeed')} m/s\n"
+            msg += f"Windsnelheid: {wdata.get('windspeed')} km/h\n"
             # Open-Meteo returns some additional fields, but check keys
             # If humidity is available under "relativehumidity" or similar, include that.
 
