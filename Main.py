@@ -8,7 +8,7 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Smart App")
-        self.geometry("800x600")
+        self.geometry("900x600")
 
         # === Navigation Bar (always visible) ===
         navbar = tk.Frame(self, bg="#ddd", height=40)

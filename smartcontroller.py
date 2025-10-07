@@ -6,94 +6,110 @@ class SmartControllerPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
 
-        # === Scrollable container ===
-        canvas = tk.Canvas(self)
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=canvas.yview)
-        self.scroll_frame = ttk.Frame(canvas)
+        # === Layout Frames ===
+        self.columnconfigure(0, weight=3)
+        self.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
 
-        self.scroll_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-        canvas.create_window((0, 0), window=self.scroll_frame, anchor="nw")
-        canvas.configure(yscrollcommand=scrollbar.set)
+        # === Left Side: Preview Area ===
+        preview_frame = ttk.Frame(self)
+        preview_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
+        ttk.Label(preview_frame, text="File Preview", font=("Arial", 14, "bold")).pack(pady=(0, 5))
 
-        # === GUI Buttons ===
-        ttk.Label(self.scroll_frame, text="Smart Controller", font=("Arial", 16, "bold")).pack(pady=10)
+        self.preview_box = tk.Text(preview_frame, wrap="none", height=25, width=80, state="disabled")
+        self.preview_box.pack(fill="both", expand=True)
 
-        ttk.Button(self.scroll_frame, text="Select Input", command=self.select_input).pack(pady=5, ipadx=10, ipady=5)
-        ttk.Button(self.scroll_frame, text="Count Days", command=self.show_days).pack(pady=5, ipadx=10, ipady=5)
-        ttk.Button(self.scroll_frame, text="Auto Calc", command=self.auto_calc).pack(pady=5, ipadx=10, ipady=5)
-        ttk.Button(self.scroll_frame, text="Overwrite", command=self.overwrite).pack(pady=5, ipadx=10, ipady=5)
-        ttk.Button(self.scroll_frame, text="Preview Output", command=self.preview_file).pack(pady=5, ipadx=10, ipady=5)
+        toggle_frame = ttk.Frame(preview_frame)
+        toggle_frame.pack(pady=5)
 
+        self.view_mode = tk.StringVar(value="input")
+        ttk.Button(toggle_frame, text="Show Input", command=lambda: self.switch_preview("input")).pack(side="left", padx=5)
+        ttk.Button(toggle_frame, text="Show Output", command=lambda: self.switch_preview("output")).pack(side="left", padx=5)
+
+        # === Right Side: Controls ===
+        control_frame = ttk.Frame(self)
+        control_frame.grid(row=0, column=1, sticky="ns", padx=10, pady=10)
+
+        ttk.Label(control_frame, text="Smart Controller", font=("Arial", 14, "bold")).pack(pady=(0, 15))
+
+        ttk.Button(control_frame, text="Select Input File", command=self.select_input, width=20).pack(pady=5, ipady=5)
+        ttk.Button(control_frame, text="Create New Input", command=self.create_input_file, width=20).pack(pady=5, ipady=5)
+        ttk.Button(control_frame, text="Auto Calculate", command=self.auto_calc, width=20).pack(pady=5, ipady=5)
+        ttk.Button(control_frame, text="Overwrite Value", command=self.overwrite, width=20).pack(pady=5, ipady=5)
+        ttk.Button(control_frame, text="Download Output", command=self.download_output, width=20).pack(pady=5, ipady=5)
+
+        # === File Setup ===
         self.input_file = "smart_input.txt"
         self.output_file = "smart_output.txt"
+        self.ensure_input_exists()
+        self.refresh_preview()
 
-        # Create default input file if missing
+    # === UI / File Handling ===
+    def ensure_input_exists(self):
+        """Ensure a default input file exists."""
         if not os.path.exists(self.input_file):
             with open(self.input_file, "w") as f:
                 f.write("date numPeople tempSetpoint tempOutside precip\n")
                 f.write("05-10-2024 2 19 8 7\n06-10-2024 2 19 8 7\n")
 
-    # === Tkinter callbacks ===
     def select_input(self):
+        """Let user select an existing input file."""
         file = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt")])
         if file:
             self.input_file = file
-            messagebox.showinfo("File Selected", f"Using {self.input_file}")
+            messagebox.showinfo("File Selected", f"Using {os.path.basename(self.input_file)}")
+            self.refresh_preview()
 
-    def show_days(self):
-        try:
-            days = aantal_dagen(self.input_file)
-            messagebox.showinfo("Days Count", f"{days} days in file.")
-        except Exception as e:
-            messagebox.showerror("Error", f"Could not read file:\n{e}")
+    def create_input_file(self):
+        """Create new input file and select it."""
+        file = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
+        if file:
+            with open(file, "w") as f:
+                f.write("date numPeople tempSetpoint tempOutside precip\n")
+            self.input_file = file
+            messagebox.showinfo("Created", f"New input file created:\n{os.path.basename(file)}")
+            self.refresh_preview()
 
     def auto_calc(self):
+        """Calculate actuator values from input to output."""
         try:
             auto_bereken(self.input_file, self.output_file)
-            messagebox.showinfo("Done", f"Actuators written to {self.output_file}")
+            messagebox.showinfo("Done", f"Actuators written to {os.path.basename(self.output_file)}")
+            self.refresh_preview()
         except Exception as e:
             messagebox.showerror("Error", f"Could not calculate:\n{e}")
 
     def overwrite(self):
+        """Open dialog to overwrite an actuator value."""
         if not os.path.exists(self.output_file):
             messagebox.showerror("Error", "No output file found. Run Auto Calc first.")
             return
 
-        # Load available dates from output file
         with open(self.output_file, "r") as f:
             dates = [line.split(";")[0] for line in f]
 
-        # === Overwrite dialog ===
         top = tk.Toplevel(self)
         top.title("Overwrite Settings")
         top.geometry("300x250")
 
         ttk.Label(top, text="Select Date:").pack(pady=5)
         date_var = tk.StringVar(value=dates[0])
-        date_menu = ttk.Combobox(top, textvariable=date_var, values=dates, state="readonly")
-        date_menu.pack(pady=5)
+        ttk.Combobox(top, textvariable=date_var, values=dates, state="readonly").pack(pady=5)
 
         ttk.Label(top, text="Select System:").pack(pady=5)
         sys_var = tk.StringVar(value="1")
-        sys_menu = ttk.Combobox(top, textvariable=sys_var, values=["1: CV", "2: Vent", "3: Water"], state="readonly")
-        sys_menu.pack(pady=5)
+        ttk.Combobox(top, textvariable=sys_var, values=["1: CV", "2: Vent", "3: Water"], state="readonly").pack(pady=5)
 
         ttk.Label(top, text="New Value:").pack(pady=5)
         val_entry = ttk.Entry(top)
         val_entry.pack(pady=5)
 
         def confirm():
-            system = sys_var.get()[0]  # only first char (1/2/3)
-            value = val_entry.get().strip()
-            result = overwrite_settings(self.output_file, date_var.get(), system, value)
+            result = overwrite_settings(self.output_file, date_var.get(), sys_var.get()[0], val_entry.get().strip())
             if result == 0:
                 messagebox.showinfo("Success", "Value overwritten.")
+                self.refresh_preview()
                 top.destroy()
             elif result == -1:
                 messagebox.showerror("Error", "Date not found.")
@@ -102,37 +118,56 @@ class SmartControllerPage(tk.Frame):
 
         ttk.Button(top, text="Confirm", command=confirm).pack(pady=10)
 
-    def preview_file(self):
+    def download_output(self):
+        """Save output file to user-selected location."""
         if not os.path.exists(self.output_file):
-            messagebox.showinfo("Preview", "No output file yet.")
+            messagebox.showerror("Error", "No output file to download.")
             return
-        with open(self.output_file, "r") as f:
-            content = f.read()
-        top = tk.Toplevel(self)
-        top.title("Output Preview")
-        txt = tk.Text(top, wrap="none", width=60, height=20)
-        txt.insert("1.0", content)
-        txt.pack(fill="both", expand=True)
+        dest = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
+        if dest:
+            with open(self.output_file, "r") as src, open(dest, "w") as dst:
+                dst.write(src.read())
+            messagebox.showinfo("Downloaded", f"File saved to:\n{dest}")
+
+    def switch_preview(self, mode):
+        """Switch between input and output preview."""
+        self.view_mode.set(mode)
+        self.refresh_preview()
+
+    def refresh_preview(self):
+        """Update the preview box based on selected mode."""
+        self.preview_box.config(state="normal")
+        self.preview_box.delete("1.0", tk.END)
+
+        file = self.input_file if self.view_mode.get() == "input" else self.output_file
+        if not os.path.exists(file):
+            msg = "No file selected. Please select or create an input file."
+            self.preview_box.insert("1.0", msg)
+        else:
+            with open(file, "r") as f:
+                self.preview_box.insert("1.0", f.read())
+
+        self.preview_box.config(state="disabled")
 
 
-# === Core functions ===
+# === Core Smart App Logic ===
 def aantal_dagen(inputFile):
     """Return number of days in input file."""
     with open(inputFile, "r") as f:
-        lines = f.readlines()[1:]
-    return len(lines)
-
+        return len(f.readlines()[1:])
 
 def auto_bereken(inputFile, outputFile):
-    """Calculate actuators and write to output file."""
+    """Calculate actuator values and write to output file."""
     with open(inputFile, "r") as f:
         lines = f.readlines()[1:]
 
     results = []
     for line in lines:
-        date, numPeople, setTemp, outTemp, precip = line.strip().split()
+        parts = line.strip().split()
+        if len(parts) != 5:
+            continue
+        date, numPeople, setTemp, outTemp, precip = parts
         numPeople, setTemp, outTemp, precip = int(numPeople), float(setTemp), float(outTemp), float(precip)
-
         diff = setTemp - outTemp
         cv = 100 if diff >= 20 else 50 if diff >= 10 else 0
         vent = min(numPeople + 1, 4)
@@ -142,14 +177,13 @@ def auto_bereken(inputFile, outputFile):
     with open(outputFile, "w") as f:
         f.write("\n".join(results))
 
-
 def overwrite_settings(outputFile, date, system, new_value):
-    """Update output file with a new value for a system."""
+    """Update output file with new actuator setting."""
     if not os.path.exists(outputFile):
         return -1
 
     with open(outputFile, "r") as f:
-        lines = [line.strip() for line in f]
+        lines = [line.strip() for line in f if line.strip()]
 
     updated = False
     for i, line in enumerate(lines):
