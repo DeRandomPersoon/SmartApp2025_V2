@@ -4,37 +4,34 @@ from mainpage import MainPage
 from weerstation import WeerstationPage
 from smartcontroller import SmartControllerPage
 from notepad import NotepadPage
-from weatherpage import WeatherPage  # your new weather page
+from weatherpage import WeatherPage  # Weerpagina
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Smart App")
         self.geometry("900x600")
+        self.minsize(800, 500)
 
-        # Navbar
+        # === Top navigation bar ===
         navbar = ttk.Frame(self)
-        navbar.grid(row=0, column=0, columnspan=2, sticky="ew")
-        navbar.columnconfigure((0,1,2,3), weight=1)  # distribute buttons evenly
+        navbar.grid(row=0, column=0, columnspan=5, sticky="ew")
+        navbar.columnconfigure((0, 1, 2, 3, 4), weight=1)
 
-        btn_main = ttk.Button(navbar, text="Hoofdmenu", command=lambda: self.show_frame("MainPage"))
-        btn_main.grid(row=0, column=0, sticky="ew", padx=2, pady=2)
+        # Buttons in navbar
+        ttk.Button(navbar, text="Hoofdmenu", command=lambda: self.show_frame("MainPage")).grid(row=0, column=0, sticky="ew", padx=2, pady=2)
+        ttk.Button(navbar, text="Weerstation", command=lambda: self.show_frame("WeerstationPage")).grid(row=0, column=1, sticky="ew", padx=2, pady=2)
+        ttk.Button(navbar, text="SmartCtrl", command=lambda: self.show_frame("SmartControllerPage")).grid(row=0, column=2, sticky="ew", padx=2, pady=2)
+        ttk.Button(navbar, text="Notepad", command=lambda: self.show_frame("NotepadPage")).grid(row=0, column=3, sticky="ew", padx=2, pady=2)
+        ttk.Button(navbar, text="Weerpagina", command=lambda: self.show_frame("WeatherPage")).grid(row=0, column=4, sticky="ew", padx=2, pady=2)
 
-        btn_weer = ttk.Button(navbar, text="Weerstation", command=lambda: self.show_frame("WeerstationPage"))
-        btn_weer.grid(row=0, column=1, sticky="ew", padx=2, pady=2)
-
-        btn_ctrl = ttk.Button(navbar, text="SmartCtrl", command=lambda: self.show_frame("SmartControllerPage"))
-        btn_ctrl.grid(row=0, column=2, sticky="ew", padx=2, pady=2)
-
-        btn_notes = ttk.Button(navbar, text="Notepad", command=lambda: self.show_frame("NotepadPage"))
-        btn_notes.grid(row=0, column=3, sticky="ew", padx=2, pady=2)
-
-        # Pages container
+        # === Pages container ===
         container = ttk.Frame(self)
         container.grid(row=1, column=0, sticky="nsew")
         self.rowconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
 
+        # Instantiate pages
         self.frames = {}
         for PageClass in (MainPage, WeerstationPage, SmartControllerPage, NotepadPage, WeatherPage):
             page_name = PageClass.__name__
@@ -42,6 +39,7 @@ class App(tk.Tk):
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
+        # Show the main page first
         self.show_frame("MainPage")
 
     def show_frame(self, name):
