@@ -1,0 +1,1 @@
+This is the smartapp made by Thijs Verhaar for the HU on Oktober of 2025. The program MUST be run from main.py, otherwise it will not work. Within the GUI, the buttons can be pressed to switch between the pages.
