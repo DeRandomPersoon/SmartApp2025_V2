@@ -5,7 +5,7 @@ from weerstation import WeerstationPage
 from smartcontroller import SmartControllerPage
 from notepad import NotepadPage
 from weatherpage import WeatherPage 
-
+    
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
