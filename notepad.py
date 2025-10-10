@@ -9,7 +9,7 @@ class NotepadPage(ttk.Frame):
         self.controller = controller
         self.filename = os.path.abspath("notes.txt")
 
-        # Layout: text area + buttons below
+        #layout
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
 
@@ -24,7 +24,7 @@ class NotepadPage(ttk.Frame):
         ttk.Button(btn_frame, text="Save As...", command=self.save_as).pack(side="left", padx=5)
         ttk.Button(btn_frame, text="Clear", command=self.clear).pack(side="left", padx=5)
 
-        # Try to load existing file
+        #load excisting file
         if os.path.exists(self.filename):
             self.load(self.filename)
 

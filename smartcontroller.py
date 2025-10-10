@@ -12,18 +12,18 @@ class SmartControllerPage(tk.Frame):
         self.input_file = "smart_input.txt"
         self.output_file = "smart_output.txt"
 
-        # Maak standaard invoerbestand als het nog niet bestaat
+        #Maak input file als die niet al bestaat
         if not os.path.exists(self.input_file):
             with open(self.input_file, "w") as f:
                 f.write("date numPeople tempSetpoint tempOutside precip\n")
                 f.write("05-10-2024 2 19 8 7\n06-10-2024 2 19 8 7\n")
 
-        # === Layout ===
+        #Layout
         self.columnconfigure(0, weight=3)
         self.columnconfigure(1, weight=1)
         self.rowconfigure(0, weight=1)
 
-        # Linkerzijde: Voorbeeldvenster
+        #left side
         left_frame = ttk.Frame(self)
         left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
@@ -32,7 +32,7 @@ class SmartControllerPage(tk.Frame):
         self.preview_text = tk.Text(left_frame, wrap="none", state="disabled", height=25, width=80)
         self.preview_text.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Schakel tussen invoer en uitvoer voorbeeld
+        #previews
         self.preview_mode = tk.StringVar(value="input")
         switch_frame = ttk.Frame(left_frame)
         switch_frame.pack(pady=5)
@@ -42,7 +42,7 @@ class SmartControllerPage(tk.Frame):
         ttk.Radiobutton(switch_frame, text="Uitvoer", variable=self.preview_mode,
                         value="output", command=self.refresh_preview).pack(side="left", padx=5)
 
-        # Rechterzijde: Knoppen
+        #Right side
         right_frame = ttk.Frame(self)
         right_frame.grid(row=0, column=1, sticky="ns", padx=10, pady=10)
 
@@ -58,7 +58,7 @@ class SmartControllerPage(tk.Frame):
 
         self.refresh_preview()
 
-    # === Functies ===
+    #functies
     def refresh_preview(self):
         """Update het voorbeeldvenster afhankelijk van de gekozen modus."""
         file_path = self.input_file if self.preview_mode.get() == "input" else self.output_file
@@ -197,7 +197,7 @@ class SmartControllerPage(tk.Frame):
 
             data_lines.append(f"{date} {num_people} {setpoint} {outside} {precip}\n")
 
-            # Sorteer op datum
+            #Sort invoer op datum
             data_lines.sort(key=lambda x: datetime.strptime(x.split()[0], "%d-%m-%Y"))
 
             with open(self.input_file, "w") as f:
@@ -211,7 +211,7 @@ class SmartControllerPage(tk.Frame):
         ttk.Button(popup, text="Add Entry", command=confirm_add).grid(row=len(fields), column=0, columnspan=2, pady=15)
 
 
-# === Functies ===
+#Functions
 def aantal_dagen(inputFile):
     with open(inputFile, "r") as f:
         return len(f.readlines()[1:])

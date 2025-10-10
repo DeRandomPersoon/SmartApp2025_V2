@@ -6,7 +6,7 @@ class WeatherPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
 
-        # Layout: at top: location input & button, below: display area
+        #Layout
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
 
@@ -27,7 +27,7 @@ class WeatherPage(ttk.Frame):
             messagebox.showwarning("Input ontbreekt", "Voer een locatie in.")
             return
         try:
-            # First, geocoding:
+            #Geolocation
             geourl = f"https://geocoding-api.open-meteo.com/v1/search?name={loc}"
             r = requests.get(geourl, timeout=5)
             r.raise_for_status()
@@ -40,7 +40,7 @@ class WeatherPage(ttk.Frame):
             lon = place["longitude"]
             name = place["name"]
 
-            # Then, weather:
+            #Weather
             weather_url = (
                 f"https://api.open-meteo.com/v1/forecast"
                 f"?latitude={lat}&longitude={lon}"
@@ -53,8 +53,6 @@ class WeatherPage(ttk.Frame):
             msg = f"Actuele weer voor {name}:\n"
             msg = f"Temperatuur: {wdata.get('temperature')}{chr(176)}C\n"
             msg += f"Windsnelheid: {wdata.get('windspeed')} km/h\n"
-            # Open-Meteo returns some additional fields, but check keys
-            # If humidity is available under "relativehumidity" or similar, include that.
 
         except Exception as e:
             msg = f"Kon weerdata niet ophalen:\n{e}"

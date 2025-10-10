@@ -10,11 +10,11 @@ class MainPage(ttk.Frame):
         super().__init__(parent)
 
         self.controller = controller
-        # Use grid for 2x2 layout
+        #Grid
         self.columnconfigure((0,1), weight=1, uniform="col")
         self.rowconfigure((0,1), weight=1, uniform="row")
 
-        # Create tiles
+        #Texts for grid
         self._make_tile(0, 0, "Weerstation", "Voer weerdata in", lambda: controller.show_frame("WeerstationPage"), "#AED6F1")
         self._make_tile(0, 1, "SmartCtrl", "Slimme actuatoren", lambda: controller.show_frame("SmartControllerPage"), "#A9DFBF")
         self._make_tile(1, 0, "Notepad", "Maak notities", lambda: controller.show_frame("NotepadPage"), "#F9E79F")
@@ -25,7 +25,7 @@ class MainPage(ttk.Frame):
         frame.grid(row=r, column=c, sticky="nsew", padx=10, pady=10)
         frame.columnconfigure(0, weight=1)
         frame.rowconfigure(0, weight=1)
-        # colored background: we can put a label behind or set frame style; easier:
+        #Colours <3
         label_bg = tk.Label(frame, bg=color)
         label_bg.place(relx=0, rely=0, relwidth=1, relheight=1)
 
@@ -34,7 +34,7 @@ class MainPage(ttk.Frame):
         lbl_sub = ttk.Label(frame, text=subtitle, font=("Arial", 10))
         lbl_sub.place(relx=0.5, rely=0.6, anchor="center")
 
-        # clickable: bind click event
+        #Make them clickable
         frame.bind("<Button-1>", lambda e: command())
         lbl_title.bind("<Button-1>", lambda e: command())
         lbl_sub.bind("<Button-1>", lambda e: command())
